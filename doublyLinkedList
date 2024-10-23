@@ -1,0 +1,438 @@
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+#include <string>
+#include <ctime>
+#include <chrono>
+using namespace std;
+
+template <typename T, typename G>
+class Node {
+public:
+    T field1;
+    G field2;
+    int id;
+    Node<T, G>* next;
+    Node<T, G>* prev;
+
+    Node(T f1, G f2) : field1(f1), field2(f2), next(nullptr), prev(nullptr) { }
+
+};
+
+
+template <typename T, typename G>
+class LinkedList {
+private: Node<T, G>* head;
+       Node<T, G>* tail;
+       //int IdCounter;
+       int length;
+
+public:
+    LinkedList() : head(nullptr), tail(nullptr), length(0) {}
+
+    ~LinkedList() { 
+        Node<T, G>* current = head;
+        Node<T, G>* next;
+        while (current != nullptr) {
+            next = current->next;
+            delete current;
+            current = next;
+
+        }
+    }
+
+    void addToTheTail(T field1, G field2) { // A
+        Node<T, G>* newNode = new Node<T, G>(field1, field2);
+        if (head == nullptr) {
+            head = newNode;
+            tail = newNode;
+        }
+        else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+        length++;
+    }
+
+    void addToTheHead(T field1, G field2) {
+        Node<T, G>* newNode = new Node<T, G>(field1, field2);
+        if (head == nullptr) {
+            head = newNode;
+            tail = newNode;
+        }
+        else {
+            newNode->next = head;
+            head->prev = newNode;
+            head = newNode;
+        }
+        length++;
+    }
+
+    void deleteLastElement() {
+        if (tail == nullptr) {
+            cout << "the list is empty( ";
+        }
+        if (head == tail) {
+            delete tail;
+            head = nullptr;
+            tail = nullptr;
+        }
+        else {
+            Node<T, G>* temp = tail;
+            tail = tail->prev;
+            tail->next = nullptr;
+            delete temp;
+        }
+        length--;
+    }
+
+    void deleteFirstElement() {
+        if (head == nullptr) {
+            cout << "the list is empty(( ";
+        }
+        if (head == tail) {
+            delete head;
+            head = nullptr;
+            tail = nullptr;
+        }
+        else {
+            Node<T, G>* temp = head;
+            head = head->next;
+            head->prev = nullptr;
+            delete temp;
+        }
+        length--;
+    }
+
+    void getElementById(int id) {
+        try {
+            if (id < 0) {
+                throw invalid_argument(" id cannot be less than 0 ");
+            }
+            if (id > length) {
+                throw invalid_argument(" id out od bounds ");
+            }
+            Node<T, G>* current = head;
+            int currentId = 0;
+            while (currentId != id) {
+                current = current->next;
+                currentId++;
+            }
+            cout << current->field1 << " , " << current->field2 << endl;
+        }
+        catch (const invalid_argument& e) {
+            cout << "Exception thrown:" << e.what() << endl;
+        }
+    }
+
+
+    void updateElementByID(int id, T newField, G newField2) {
+        try {
+            if (id < 0) {
+                throw invalid_argument(" id cannot be less than 0 ");
+            }
+            if (id > length) {
+                throw invalid_argument(" id out od bounds ");
+            }
+            Node<T, G>* current = head;
+            int currentId = 0;
+            while (currentId != id) {
+                current = current->next;
+                currentId++;
+            }
+            current->field1 = newField;
+            current->field2 = newField2;
+            //cout << current->field1 << " , " << current->field2 << endl;
+        }
+        catch (const invalid_argument& e) {
+            cout << e.what() << endl;
+        }
+    }
+
+    void findNodeByAttribute(T wantedField1, G wantedField2) {
+        Node<T, G>* current = head;
+        bool isFound = false;
+        while (current != nullptr) {
+            if (wantedField1 == current->field1 && wantedField2 == current->field2) {
+                cout << "Wanted result: " << current->field1 << " , " << current->field2 << endl;
+                isFound = true;
+                break;
+            }
+            current = current->next;
+        }
+        if (isFound == false) {
+            cout << "element not found( " << endl;
+        }
+      }
+
+    void findNodeByAttribute(T wantedField1) {
+        Node<T, G>* current = head;
+        bool isFound = false;
+        while (current != nullptr) {
+            if (wantedField1 == current->field1) {
+                cout << "Wanted result: " << current->field1 << " , " << current->field2 << endl;
+                isFound = true;
+                break;
+            }
+            current = current->next;
+        }
+        if (isFound == false) {
+            cout << "element not found(" << endl;
+        }
+    }
+    void findNodeByAttribute(G wantedField2) {
+        Node<T, G>* current = head;
+        bool isFound = false;
+        while (current != nullptr) {
+            if (wantedField2 == current->field2) {
+                cout << "Wanted result: " << current->field1 << " , " << current->field2 << endl;
+                isFound = true;
+                break;
+            }
+            current = current->next;
+        }
+        if (isFound == false) {
+            cout << "element not found(" << endl;
+        }
+    }
+
+    bool deleteNodeByAttribute(T wantedField1, G wantedField2) { 
+            Node<T, G>* current = head;
+            while (current != nullptr) {
+                if (wantedField1 == current->field1 && wantedField2 == current->field2) {
+                    Node<T, G>* nodeToDelete = current;
+                    if (current->prev != nullptr && current->next != nullptr) { 
+                        Node<T, G>* tempPreviousNode = current->prev;
+                        Node<T, G>* tempNextNode = current->next;
+                        tempPreviousNode->next = tempNextNode;
+                        tempNextNode->prev = tempPreviousNode;
+                    }else if (current->prev == nullptr) { 
+                        head = current->next;
+                        if (head != nullptr) {
+                            head->prev = nullptr;
+                        }else {
+                            tail = nullptr; 
+                        }
+                    }
+                    else if (current->next == nullptr) { 
+                        tail = current->prev;
+                        if (tail != nullptr) {
+                            tail->next = nullptr;
+                        }else {
+                            head = nullptr; 
+                        }
+                    }
+                    current = current->next;  
+                    delete nodeToDelete;      
+                    length--;                   
+                    return true;                   
+                }
+                current = current->next;
+            }
+            return false;
+            //cout << "Element not found." << endl;
+    }
+
+    /*
+    bool deleteNodeByAttribute(T wantedField1) {
+        Node<T , G >* current = head;
+        while (current != nullptr) {
+            if (wantedField1 == current->field1) {
+                Node<T, G>* thisNodeMustBeDeleted = current;
+                if (current->prev != nullptr && current->next != nullptr) {
+                    Node<T, G>* tempPreviousNode = current->prev;
+                    Node<T, G>* tempNextNode = current->next;
+                    tempPreviousNode->next = tempNextNode;
+                }else if (current->prev == nullptr) {
+                    head = current->next;
+                    if (head != nullptr) {
+                        head->prev = nullptr;
+                    }else {
+                        tail = nullptr;
+                    }
+                }else if (current->next == nullptr) {
+                    tail = current->prev;
+                    if (tail != nullptr) {
+                        tail->next = nullptr;
+                    }else {
+                        head = nullptr;
+                    }
+                }
+                current = current->next;
+                delete thisNodeMustBeDeleted;
+                length--;
+                return true;
+            }
+            current = current->next;
+        }
+        return false;
+    }
+    
+    bool deleteNodeByAttribute(G wantedField2) {
+        Node<T, G>* current = head;
+        while (current != nullptr) {
+            if (wantedField2 == current->field2) {
+                Node<T, G>* nodeToDelete = current;
+                if (current->prev != nullptr && current->next != nullptr) { 
+                    Node<T, G>* tempPreviousNode = current->prev;
+                    Node<T, G>* tempNextNode = current->next;
+                    tempPreviousNode->next = tempNextNode;
+                    tempNextNode->prev = tempPreviousNode;
+                }
+                else if (current->prev == nullptr) { 
+                    head = current->next;
+                    if (head != nullptr) {
+                        head->prev = nullptr;
+                    }
+                    else {
+                        tail = nullptr; 
+                    }
+                }
+                else if (current->next == nullptr) { 
+                    tail = current->prev;
+                    if (tail != nullptr) {
+                        tail->next = nullptr;
+                    }
+                    else {
+                        head = nullptr; 
+                    }
+                }
+                current = current->next;  
+                delete nodeToDelete;      
+                length--;                   
+                return true;              
+            }
+            current = current->next;
+        }
+        return false;
+    }*/
+
+    string deleteWholeList() {
+        Node<T, G>* current = head;
+        while (current != nullptr) {
+            Node<T, G>* deleteThisNode = current;
+            current = current->next;
+            delete deleteThisNode;
+        }
+        head = nullptr;
+        tail = nullptr;
+        length = 0;
+        return "list has been cleared\n";
+    }
+    
+
+    string toString(int renderRange) {
+        Node<T, G>* current = head;
+        string res = "Length: " + to_string(length) + "\n";
+        res = res + "Nodes: ";
+        int count = 0;
+        for (int i = 0; i < renderRange; i++) {
+            res += "(" + to_string(current->field1) + ", " + current->field2 + ")\n";
+            current = current->next;
+        }
+        return res;
+    }
+    
+
+    void initializer(int nodesAmount) {
+
+        for (int i = 0; i < nodesAmount; i++) {
+            int randomInt = rand() % 10000 ;
+            char randomChar1 = 'a' + rand() % 26;
+            char randomChar2 = 'a' + rand() % 26;
+            string randomString = string(1, randomChar1) + string(1, randomChar2);
+            addToTheTail(randomInt, randomString);
+        }
+        
+    }
+
+    bool compararatorForField1(const Node<int, string>* firstField, const Node<int, string>* secondField) {
+        return firstField->field1 < secondField->field1;  
+    }
+
+
+
+    void dislayForward() {
+        Node<T, G>* current = head;
+        cout << "{" << endl;
+        while (current != nullptr) {
+            cout << "   [" << current->field1 << "," << current->field2 << "]" << endl;
+            current = current->next; 
+        }
+        cout << "}" << endl;
+    }
+};
+
+//TODO toString Є, object init Є, rand Є , clock є 
+
+int main() {
+    const int p = 6;
+    const int k = pow(10, p);
+
+
+    LinkedList<int, string> list;
+
+    auto start = chrono::high_resolution_clock::now();
+    list.initializer(k);
+    cout << list.toString(10);
+    auto end = chrono::high_resolution_clock::now();
+    auto timeElapsed = end - start;
+    auto convertToMs = chrono::duration_cast<chrono::milliseconds>(timeElapsed).count();
+    cout << "Milliseconds: " << convertToMs << endl;
+    
+    /*list.addToTheHead(1, "test");
+        list.addToTheHead(999, "password");
+        list.addToTheHead(01110001011, "encrypted message");
+        list.addToTheTail(1, "adding to the tail");
+
+        cout << "toString" << endl;
+        cout << list.toString();
+
+        cout << "displaying forward: " << endl;
+        list.dislayForward();
+
+
+        list.deleteLastElement(); // C spoko
+        cout << "deleted the last element" << endl;
+        list.dislayForward();
+
+        list.deleteFirstElement(); // D spoko
+        cout << "deleted the first element" << endl;
+        list.dislayForward();
+
+        cout << "Getting element by id " << endl; // E SPOKOOO
+        //list.getElementById(6);
+        list.getElementById(-1);
+        cout << endl;
+
+        cout << "updating element" << endl;
+        list.updateElementByID(1, 505, "Vanish"); // F spoko
+        cout << "displaying list" << endl;
+        list.dislayForward();
+
+        list.addToTheTail(333, "Mascara");
+        list.addToTheTail(342, "Chop Suey!");
+        list.addToTheTail(377, "Scar tissue");
+        list.dislayForward();
+
+        cout << "seeking an element (505, 'vanish') by both attributes" << endl; // G spoko
+        list.findNodeByAttribute(505, "Vanish");
+
+        cout << "seeking an element by int attribute (first field)" << endl; // G spoko
+        list.findNodeByAttribute(333);
+
+        cout << "seeking element by string attribute (second field)" << endl; // G spoko
+        list.findNodeByAttribute("Scar tissue");
+
+        list.dislayForward();
+
+        cout << "deleting Node by an attribute " << endl; // H 50/50
+        list.deleteNodeByAttribute(505, "Vanish"); //middle element ok
+        //list.deleteNodeByAttribute(333); //by first attribute
+        //list.deleteNodeByAttribute("Chop Suey!"); // by second
+        list.dislayForward();
+
+        cout << list.deleteWholeList();
+        list.dislayForward();*/
+}
